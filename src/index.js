@@ -9,19 +9,15 @@ const refs = {
   searchBox: document.querySelector('input#search-box'),
   countryList: document.querySelector('ul.country-list'),
   countryInfo: document.querySelector('div.country-info'),
-  loader: document.querySelector('div.loader'),
+};
+const { countryInfo, countryList, searchBox } = refs;
+
+const clearContainers = () => {
+  countryInfo.innerHTML = '';
+  countryList.innerHTML = '';
 };
 
-const clearCountryInfoContainers = () => {
-  refs.countryInfo.innerHTML = '';
-  refs.countryList.innerHTML = '';
-};
-
-const toogleLoader = () => {
-  refs.loader.classList.toggle('is-hidden');
-};
-
-const createListOfCountriesMarkup = data =>
+const createMarkup = data =>
   data
     .map(
       ({ name, flags }) =>
@@ -32,7 +28,7 @@ const createListOfCountriesMarkup = data =>
     )
     .join('');
 
-const createSingleCountryMarkup = ([country]) => {
+const createOneCountryMarkup = ([country]) => {
   const { name, flags, capital, population, languages } = country;
 
   return `<div class="country-info__head">
@@ -56,18 +52,18 @@ const createSingleCountryMarkup = ([country]) => {
           </ul>`;
 };
 
-const renderData = data => {
+const checkData = data => {
   if (data.length > 10) {
     Notify.info('Too many matches found. Please enter a more specific name.');
     return;
   }
 
   if (data.length > 1) {
-    refs.countryList.innerHTML = createListOfCountriesMarkup(data);
+    countryList.innerHTML = createMarkup(data);
     return;
   }
 
-  refs.countryInfo.innerHTML = createSingleCountryMarkup(data);
+  countryInfo.innerHTML = createOneCountryMarkup(data);
 };
 
 const showError = error =>
@@ -79,26 +75,20 @@ const showError = error =>
 
 const findCountries = async name => {
   try {
-    renderData(await fetchCountries(name));
+    checkData(await fetchCountries(name));
   } catch (error) {
     showError(error);
   }
-
-  toogleLoader();
 };
 
-const onSearchBoxInput = ({ target }) => {
+const onInput = ({ target }) => {
   const countryName = target.value.trim();
 
-  clearCountryInfoContainers();
+  clearContainers();
 
   if (!countryName) return;
 
-  toogleLoader();
   findCountries(countryName);
 };
 
-refs.searchBox.addEventListener(
-  'input',
-  debounce(onSearchBoxInput, DEBOUNCE_DELAY)
-);
+searchBox.addEventListener('input', debounce(onInput, DEBOUNCE_DELAY));
