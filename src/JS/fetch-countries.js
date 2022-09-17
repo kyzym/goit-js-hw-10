@@ -7,6 +7,5 @@ export const fetchCountries = async name => {
   );
 
   if (!response.ok) throw new Error(response.status);
-
   return await response.json();
 };
